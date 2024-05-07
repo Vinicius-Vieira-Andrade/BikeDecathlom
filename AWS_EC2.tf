@@ -7,7 +7,7 @@ provider "aws" {
 resource "aws_instance" "linux1" {
   ami           = "ami-07caf09b362be10b8"
   instance_type = "t2.micro"
-  subnet_id     = "subnet-0013f4408c4caf59f" # ID da Subnet
+  subnet_id     = "subnet-07e602b4227a6ca57" # ID da Subnet
   vpc_security_group_ids = ["${aws_security_group.instance_sg.id}"]
 
   key_name = "vockey"
@@ -19,7 +19,31 @@ resource "aws_instance" "linux1" {
               service docker start
               usermod -a -G docker ec2-user
               docker push vinividrade/aula73:${var.github_sha}
-              docker run -d -p 8080:8080 --name api-container <substituir_aqui>/apicontainer:${var.github_sha}
+              docker run -d -p 8080:8080 --name aula-73 vinividrade/aula73:${var.github_sha}
+              EOF
+
+  tags = {
+    Name = "EC2_Instance-alpine-5"
+  }
+}
+
+
+resource "aws_instance" "linux2" {
+  ami           = "ami-07caf09b362be10b8"
+  instance_type = "t2.micro"
+  subnet_id     = "subnet-0880e4e086125f703" # ID da Subnet
+  vpc_security_group_ids = ["${aws_security_group.instance_sg.id}"]
+
+  key_name = "vockey"
+
+  user_data = <<-EOF
+              #!/bin/bash
+              yum update -y
+              yum install -y docker
+              service docker start
+              usermod -a -G docker ec2-user
+              docker push vinividrade/aula73:${var.github_sha}
+              docker run -d -p 8080:8080 --name aula-73 vinividrade/aula73:${var.github_sha}
               EOF
 
   tags = {
