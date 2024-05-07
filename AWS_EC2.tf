@@ -12,16 +12,6 @@ resource "aws_instance" "linux1" {
 
   key_name = "vockey"
 
-  user_data = <<-EOF
-              #!/bin/bash
-              yum update -y
-              yum install -y docker
-              service docker start
-              usermod -a -G docker ec2-user
-              docker push vinividrade/aula73:${var.github_sha}
-              docker run -d -p 8080:8080 --name aula-73 vinividrade/aula73:${var.github_sha}
-              EOF
-
   tags = {
     Name = "EC2_Instance-alpine-5"
   }
@@ -35,16 +25,6 @@ resource "aws_instance" "linux2" {
   vpc_security_group_ids = ["${aws_security_group.instance_sg.id}"]
 
   key_name = "vockey"
-
-  user_data = <<-EOF
-              #!/bin/bash
-              yum update -y
-              yum install -y docker
-              service docker start
-              usermod -a -G docker ec2-user
-              docker push vinividrade/aula73:${var.github_sha}
-              docker run -d -p 8080:8080 --name aula-73 vinividrade/aula73:${var.github_sha}
-              EOF
 
   tags = {
     Name = "EC2_Instance-alpine-5"
