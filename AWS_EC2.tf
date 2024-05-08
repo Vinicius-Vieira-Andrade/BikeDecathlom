@@ -35,9 +35,13 @@ resource "aws_instance" "linux2" {
 
   user_data = <<-EOF
               #!/bin/bash
-              yum update -y
-              yum install -y 
+              sudo yum update -y
+              sudo yum install -y 
+              sudo systemctl start httpd
+              sudo systemctl enable httpd
               sudo yum install -y amazon-efs-utils
+              sudo mkdir /mnt/efs
+
               EOF
 
   tags = {
@@ -58,8 +62,15 @@ resource "aws_security_group" "instance_sg" {
   }
 
   ingress {
-    from_port   = 8080
-    to_port     = 8080
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 2049
+    to_port     = 2049
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
