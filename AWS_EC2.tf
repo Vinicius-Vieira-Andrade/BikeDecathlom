@@ -16,7 +16,14 @@ resource "aws_instance" "linux1" {
               #!/bin/bash
               yum update -y
               yum install -y 
+              sudo yum install -y httpd git
+              sudo systemctl start httpd
+              sudo systemctl enable httpd
               sudo yum install -y amazon-efs-utils
+              sudo mkdir /mnt/efs
+              sudo mount -t efs ${aws_efs_file_system.efs.id}:/ /mnt/efs
+
+
               EOF
 
   tags = {
@@ -37,10 +44,13 @@ resource "aws_instance" "linux2" {
               #!/bin/bash
               sudo yum update -y
               sudo yum install -y 
+              sudo yum install -y httpd git
               sudo systemctl start httpd
               sudo systemctl enable httpd
               sudo yum install -y amazon-efs-utils
               sudo mkdir /mnt/efs
+              sudo mount -t efs ${aws_efs_file_system.efs.id}:/ /mnt/efs
+
 
               EOF
 
