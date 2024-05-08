@@ -92,4 +92,4 @@ output "public_ip2" {
   value = aws_instance.linux2.public_ip
 }
 
-#sssss
+#ssssssss
