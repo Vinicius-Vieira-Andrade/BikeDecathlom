@@ -58,7 +58,7 @@ jobs:
         run: |
           echo "$KEY_PATH" > ./chave.pem
           chmod 600 ./chave.pem
-          scp -i ./chave.pem images/*.* ec2-user@34.200.235.229:/home/ec2-user/mnt/efs/
+          scp -i ./chave.pem images/*.* ec2-user@34.200.235.229:/mnt/efs/
         env:
           KEY_PATH: ${{ secrets.CHAVE_PEM }}
 
