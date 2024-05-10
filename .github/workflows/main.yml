@@ -6,6 +6,9 @@ on:
       - "main"
     paths-ignore:
       - "*.md"
+    paths:
+      - images/**
+      - .github/workflows/main.yml
 jobs:
   githubactions-senai:
     runs-on: ubuntu-latest
@@ -38,6 +41,28 @@ jobs:
           snyk -d auth $SNYK_TOKEN
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_AUTH_TOKEN }}
+
+      - name: Instalação das dependências SSH
+        run: sudo apt-get install -y openssh-client
+      
+      - name: Verificar caminho da chave .pem
+        run: echo "$KEY_PATH"
+        env:
+          KEY_PATH: ${{ secrets.CHAVE_PEM }}
+
+      - name: Adicionar host EC2 ao known_hosts
+        run: |
+          ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N ''
+          ssh-keyscan -H <trocar_ip> >> ~/.ssh/known_hosts
+  
+      - name: Envio do arquivo via SCP
+        if: always()
+        run: |
+          echo "$KEY_PATH" > ./chave.pem
+          chmod 600 ./chave.pem
+          scp -i ./chave.pem images/*.* ec2-user@<trocar_ip>:/home/ec2-user/efs/
+        env:
+          KEY_PATH: ${{ secrets.CHAVE_PEM }}
 
       - name: AWS CLI - 2
         if: always()
