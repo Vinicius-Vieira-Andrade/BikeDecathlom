@@ -1,5 +1,5 @@
-name: senai_automacao_aula73
-run-name: ${{ github.actor }} Pipeline Deploy 🚀
+name: senai_automacao_efs
+run-name: ${{ github.actor }} Pipeline deploy
 on:
   push:
     branches:
@@ -8,41 +8,15 @@ on:
       - images/**
       - .github/workflows/main.yml
 jobs:
-  githubactions-senai:
+  efs-senai:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: INSTALL PACKAGES
-        run: |
-          sudo apt update -y
-          sudo apt-get install figlet -y
-          curl https://static.snyk.io/cli/latest/snyk-linux -o snyk
-          chmod +x ./snyk
-          mv ./snyk /usr/local/bin/
-
-          sudo apt-get update && sudo apt-get install -y gnupg software-properties-common
-          wget -O- https://apt.releases.hashicorp.com/gpg | \
-            gpg --dearmor | \
-            sudo tee /usr/share/keyrings/hashicorp-archive-keyring.gpg > /dev/null
-
-          echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] \
-            https://apt.releases.hashicorp.com $(lsb_release -cs) main" | \
-            sudo tee /etc/apt/sources.list.d/hashicorp.list
-
-          sudo apt update -y
-          sudo apt-get install terraform -y
-
-      - name: Snyk Auth
-        run: |
-          snyk -d auth $SNYK_TOKEN
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_AUTH_TOKEN }}
-
       - name: Instalação das dependências SSH
         run: sudo apt-get install -y openssh-client
-      
+
       - name: Verificar caminho da chave .pem
         run: echo "$KEY_PATH"
         env:
@@ -51,30 +25,13 @@ jobs:
       - name: Adicionar host EC2 ao known_hosts
         run: |
           ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N ''
-          ssh-keyscan -H 34.200.235.229 >> ~/.ssh/known_hosts
-  
+          ssh-keyscan -H 3.81.166.121 >> ~/.ssh/known_hosts
+
       - name: Envio do arquivo via SCP
         if: always()
         run: |
           echo "$KEY_PATH" > ./chave.pem
           chmod 600 ./chave.pem
-          scp -i ./chave.pem images/*.* ec2-user@34.200.235.229:/mnt/efs/
+          scp -i ./chave.pem images/*.* ec2-user@3.81.166.121:/home/ec2-user/efs/
         env:
           KEY_PATH: ${{ secrets.CHAVE_PEM }}
-
-      - name: AWS CLI - 2
-        if: always()
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-region: us-east-1
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-
-      - name: Terraform apply (CD)
-        if: always()
-        run: |
-          COMMIT_SHA=$(echo $GITHUB_SHA | cut -c 1-5)
-          terraform init
-          terraform apply -var="github_sha=$COMMIT_SHA" --auto-approve
-
